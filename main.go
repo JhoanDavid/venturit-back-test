@@ -3,45 +3,55 @@ package main
 import (
 	"fmt"
 	"log"
+	"movies/db"
+	"movies/routes"
+	"net/http"
 	"os"
+	"time"
 
-	"github.com/joho/godotenv"
+	"github.com/eefret/gomdb"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/mux"
 )
 
 func main() {
-	YOUR_API_KEY := getEnvVariable("OMDB_API_KEY")
-	fmt.Println(YOUR_API_KEY)
-	/*
-		api := gomdb.Init(YOUR_API_KEY)
-		query := &gomdb.QueryData{Title: "Macbeth", SearchType: gomdb.MovieSearch}
-		res, err := api.Search(query)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		fmt.Println(res.Search)
+	con, err := db.GetDB()
 
-		query = &gomdb.QueryData{Title: "Macbeth", Year: "2015"}
-		res2, err := api.MovieByTitle(query)
+	if err != nil {
+		fmt.Println("error with database " + err.Error())
+	} else {
+		err = con.Ping()
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("error making conection to DB, error: " + err.Error())
 			return
 		}
-		fmt.Println(res2)
+	}
 
-		res3, err := api.MovieByImdbID("tt2884018")
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		fmt.Println(res3)*/
+	router := mux.NewRouter()
+	routes.SetupRoutes(router)
+
+	port := ":8000"
+
+	server := &http.Server{
+		Handler:      router,
+		Addr:         port,
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+	}
+
+	log.Printf("Server started at %s", port)
+	log.Fatal(server.ListenAndServe())
 }
 
-func getEnvVariable(key string) string {
-	// load .env file
-	err := godotenv.Load(".env")
+func getMovieOMDBByTitle(title string) {
+	OMDB_API_KEY := os.Getenv("OMDB_API_KEY")
+
+	api := gomdb.Init(OMDB_API_KEY)
+	query := &gomdb.QueryData{Title: title, SearchType: gomdb.MovieSearch}
+	res, err := api.MovieByTitle(query)
 	if err != nil {
-		log.Fatalf("Error loading .env file")
+		fmt.Println(err)
+		return
 	}
-	return os.Getenv(key)
+	fmt.Println(res)
 }
