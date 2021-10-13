@@ -1,9 +1,12 @@
 package controller
 
 import (
+	"encoding/json"
 	"movies/helper"
+	"movies/model"
 	"movies/service"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -28,10 +31,16 @@ func GetMovieById(w http.ResponseWriter, r *http.Request) {
 }
 
 func EditMovie(w http.ResponseWriter, r *http.Request) {
-	id := mux.Vars(r)["id"]
-	movie, err := service.EditMovie(id)
+	var movie model.Movie
+	json.NewDecoder(r.Body).Decode(&movie)
+	err := service.EditMovie(movie)
 	if err == nil {
-		helper.RespondWithSuccess(movie, w)
+		movieUpdated, err := service.GetMovieById(strconv.FormatInt(movie.Id, 10))
+		if err == nil {
+			helper.RespondWithSuccess(movieUpdated, w)
+		} else {
+			helper.RespondWithCustomError("Error, movie with id="+strconv.FormatInt(movie.Id, 10)+" doesn't exist", w)
+		}
 	} else {
 		helper.RespondWithError(err, w)
 	}

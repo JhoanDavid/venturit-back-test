@@ -102,23 +102,18 @@ func GetFiltredMovies(filters []string) ([]model.Movie, error) {
 	return moviesList, nil
 }
 
-func EditMovie(id string) (model.Movie, error) {
-	var movie model.Movie
-	var genres string
+func EditMovie(movie model.Movie) error {
+	genres := ""
 	bd, err := db.GetDB()
 	if err != nil {
-		return movie, err
+		return err
 	}
-
-	rows := bd.QueryRow("SELECT id, title, released_year, rating, genres FROM movies WHERE id=?", id)
-	err = rows.Scan(&movie.Id, &movie.Title, &movie.Released_year, &movie.Rating, &genres)
-	arrayGenres := strings.Split(genres, ",")
-	for i := range arrayGenres {
-		arrayGenres[i] = strings.TrimSpace(arrayGenres[i])
+	for i := range movie.Genres {
+		if i != 0 {
+			genres += ", "
+		}
+		genres += movie.Genres[i]
 	}
-	movie.Genres = arrayGenres
-	if err != nil {
-		return movie, err
-	}
-	return movie, nil
+	_, err = bd.Exec("UPDATE movies SET rating=?, genres=? WHERE id=?", movie.Rating, genres, movie.Id)
+	return err
 }
