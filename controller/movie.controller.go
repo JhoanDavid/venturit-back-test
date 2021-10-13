@@ -30,6 +30,39 @@ func GetMovieById(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func GetMovieByTitle(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Query()["title"][0]
+	movie, err := service.GetMovieByTitle(title)
+	if err == nil {
+		helper.RespondWithSuccess(movie, w)
+	} else {
+		movieOMDB, err := service.GetMovieOMDBByTitle(title)
+		if err == nil {
+			movie, err := service.GetMovieByTitle(movieOMDB.Title)
+			if err == nil {
+				helper.RespondWithSuccess(movie, w)
+			} else {
+				intYear, _ := strconv.Atoi(movieOMDB.Year)
+				fRating, _ := strconv.ParseFloat(movieOMDB.ImdbRating, 64)
+				movie := model.Movie{0, movieOMDB.Title, intYear, fRating, helper.GenresStringtoArray(movieOMDB.Genre)}
+				err = service.CreateMovie(movie)
+				if err == nil {
+					movie, err := service.GetMovieByTitle(movieOMDB.Title)
+					if err == nil {
+						helper.RespondWithSuccess(movie, w)
+					} else {
+						helper.RespondWithError(err, w)
+					}
+				} else {
+					helper.RespondWithError(err, w)
+				}
+			}
+		} else {
+			helper.RespondWithError(err, w)
+		}
+	}
+}
+
 func EditMovie(w http.ResponseWriter, r *http.Request) {
 	var movie model.Movie
 	json.NewDecoder(r.Body).Decode(&movie)
@@ -63,6 +96,7 @@ func GetFiltredMovies(w http.ResponseWriter, r *http.Request) {
 
 		if keys["initial_released_year"][0] > keys["final_released_year"][0] {
 			helper.RespondWithCustomError("Error, please initial_released_year should be less than final_released_year", w)
+			return
 		}
 		filters = append(filters, "released_year>="+keys["initial_released_year"][0]+" AND released_year<="+keys["final_released_year"][0])
 	}
@@ -80,9 +114,11 @@ func GetFiltredMovies(w http.ResponseWriter, r *http.Request) {
 			break
 		default:
 			helper.RespondWithCustomError("Error, please send lower or higher for rating_especification", w)
+			return
 		}
 	}
 
+	//rating genres
 	if keys["genres"] != nil {
 		for i := range keys["genres"] {
 			filters = append(filters, "genres like '%"+keys["genres"][i]+"%'")

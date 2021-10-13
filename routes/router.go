@@ -16,6 +16,7 @@ func SetupRoutes(router *mux.Router) {
 
 	subRouter := router.PathPrefix("/movies").Subrouter()
 	subRouter.HandleFunc("/all", controller.GetAllMovies).Methods(http.MethodGet)
+	subRouter.HandleFunc("/byTitle", controller.GetMovieByTitle).Methods(http.MethodGet)
 	subRouter.HandleFunc("/filtered", controller.GetFiltredMovies).Methods(http.MethodGet)
 	subRouter.HandleFunc("/edit", controller.EditMovie).Methods(http.MethodPut)
 	subRouter.HandleFunc("/{id}", controller.GetMovieById).Methods(http.MethodGet)

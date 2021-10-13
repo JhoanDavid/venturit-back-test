@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"movies/db"
 	"movies/routes"
@@ -16,11 +15,11 @@ func main() {
 	con, err := db.GetDB()
 
 	if err != nil {
-		fmt.Println("error with database " + err.Error())
+		log.Println("error with database " + err.Error())
 	} else {
 		err = con.Ping()
 		if err != nil {
-			fmt.Println("error making conection to DB, error: " + err.Error())
+			log.Println("error making conection to DB, error: " + err.Error())
 			return
 		}
 	}
