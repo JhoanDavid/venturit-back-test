@@ -68,7 +68,7 @@ func GetFiltredMovies(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//rating filter
-	if keys["released_year"] != nil {
+	if keys["rating"] != nil && keys["rating_especification"] == nil {
 		filters = append(filters, "rating="+keys["rating"][0])
 	} else if keys["rating"] != nil && keys["rating_especification"] != nil {
 		switch keys["rating_especification"][0] {
@@ -80,6 +80,12 @@ func GetFiltredMovies(w http.ResponseWriter, r *http.Request) {
 			break
 		default:
 			helper.RespondWithCustomError("Error, please send lower or higher for rating_especification", w)
+		}
+	}
+
+	if keys["genres"] != nil {
+		for i := range keys["genres"] {
+			filters = append(filters, "genres like '%"+keys["genres"][i]+"%'")
 		}
 	}
 

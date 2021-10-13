@@ -6,10 +6,8 @@ import (
 	"movies/db"
 	"movies/routes"
 	"net/http"
-	"os"
 	"time"
 
-	"github.com/eefret/gomdb"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 )
@@ -41,17 +39,4 @@ func main() {
 
 	log.Printf("Server started at %s", port)
 	log.Fatal(server.ListenAndServe())
-}
-
-func getMovieOMDBByTitle(title string) {
-	OMDB_API_KEY := os.Getenv("OMDB_API_KEY")
-
-	api := gomdb.Init(OMDB_API_KEY)
-	query := &gomdb.QueryData{Title: title, SearchType: gomdb.MovieSearch}
-	res, err := api.MovieByTitle(query)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println(res)
 }
