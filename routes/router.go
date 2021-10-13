@@ -14,7 +14,9 @@ func SetupRoutes(router *mux.Router) {
 		helper.RespondWithSuccess("Venturit-test Api rest", w)
 	}).Methods(http.MethodGet)
 
-	router.HandleFunc("/movies", controller.GetAllMovies).Methods(http.MethodGet)
-	router.HandleFunc("/movies/{id}", controller.GetMovieById).Methods(http.MethodGet)
-
+	subRouter := router.PathPrefix("/movies").Subrouter()
+	subRouter.HandleFunc("/all", controller.GetAllMovies).Methods(http.MethodGet)
+	subRouter.HandleFunc("/filtered", controller.GetFiltredMovies).Methods(http.MethodGet)
+	subRouter.HandleFunc("/{id}", controller.GetMovieById).Methods(http.MethodGet)
+	subRouter.HandleFunc("/{id}", controller.EditMovie).Methods(http.MethodPut)
 }

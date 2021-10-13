@@ -14,3 +14,8 @@ func RespondWithSuccess(data interface{}, w http.ResponseWriter) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(data)
 }
+
+func RespondWithCustomError(data interface{}, w http.ResponseWriter) {
+	w.WriteHeader(http.StatusInternalServerError)
+	json.NewEncoder(w).Encode(data)
+}
